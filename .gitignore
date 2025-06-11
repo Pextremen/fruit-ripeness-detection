@@ -45,6 +45,7 @@ ENV/
 *.gif
 model_results/
 output/
+outputs/
 
 # Logs
 *.log

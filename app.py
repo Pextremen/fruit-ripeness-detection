@@ -365,6 +365,9 @@ class FruitRipenessDetection:
         """
         print("Creating visualizations...")
         
+        # Create outputs directory if it doesn't exist
+        os.makedirs('outputs', exist_ok=True)
+        
         # Model comparison graphs
         model_names = list(self.results.keys())
         accuracies = [self.results[name]['accuracy'] for name in model_names]
@@ -386,7 +389,7 @@ class FruitRipenessDetection:
         
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig('model_accuracy_comparison.png', dpi=300, bbox_inches='tight')
+        plt.savefig('outputs/model_accuracy_comparison.png', dpi=300, bbox_inches='tight')
         plt.show()
         
         # F1 Score comparison
@@ -403,7 +406,7 @@ class FruitRipenessDetection:
         
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig('model_f1_comparison.png', dpi=300, bbox_inches='tight')
+        plt.savefig('outputs/model_f1_comparison.png', dpi=300, bbox_inches='tight')
         plt.show()
         
         # AUC comparison
@@ -420,7 +423,7 @@ class FruitRipenessDetection:
         
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig('model_auc_comparison.png', dpi=300, bbox_inches='tight')
+        plt.savefig('outputs/model_auc_comparison.png', dpi=300, bbox_inches='tight')
         plt.show()
         
         # Confusion matrices for each model
@@ -434,7 +437,7 @@ class FruitRipenessDetection:
             plt.ylabel('Actual', fontsize=12)
             plt.xlabel('Predicted', fontsize=12)
             
-            filename = f"{name.lower().replace(' ', '_')}_confusion_matrix.png"
+            filename = f"outputs/{name.lower().replace(' ', '_')}_confusion_matrix.png"
             plt.savefig(filename, dpi=300, bbox_inches='tight')
             plt.show()
             
@@ -475,8 +478,11 @@ class FruitRipenessDetection:
             print(f"Model {model_name} not found!")
             return
         
+        # Create outputs directory if it doesn't exist
+        os.makedirs('outputs', exist_ok=True)
+        
         # Save model
-        model_filename = f"{filename}_model.pkl"
+        model_filename = f"outputs/{filename}_model.pkl"
         joblib.dump(self.models[model_name], model_filename)
         
         # Save model information
@@ -489,7 +495,7 @@ class FruitRipenessDetection:
             'results': self.results.get(model_name, {})
         }
         
-        info_filename = f"{filename}_model.pkl_info.pkl"
+        info_filename = f"outputs/{filename}_model.pkl_info.pkl"
         joblib.dump(model_info, info_filename)
         
         print(f"Model saved: {model_filename}")

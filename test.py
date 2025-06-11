@@ -18,8 +18,17 @@ def main():
     if len(sys.argv) > 1:
         model_path = sys.argv[1]
     else:
-        # Automatically find model files
-        model_files = [f for f in os.listdir('.') if f.endswith('_model.pkl') and not f.endswith('_info.pkl')]
+        # Look for model files in outputs directory first, then in current directory
+        outputs_dir = 'outputs'
+        model_files = []
+        
+        if os.path.exists(outputs_dir):
+            model_files = [os.path.join(outputs_dir, f) for f in os.listdir(outputs_dir) 
+                          if f.endswith('_model.pkl') and not f.endswith('_info.pkl')]
+        
+        if not model_files:
+            # Fallback to current directory
+            model_files = [f for f in os.listdir('.') if f.endswith('_model.pkl') and not f.endswith('_info.pkl')]
         
         if not model_files:
             print("Error: No trained model found.")
@@ -83,7 +92,7 @@ def main():
         test_images = random.sample(test_images, min(4, len(test_images)))
         
         # Test and visualize
-        plt.figure(figsize=(15, 10))
+        plt.figure(figsize=(12, 8))
         
         correct_predictions = 0
         total_predictions = len(test_images)
@@ -113,19 +122,22 @@ def main():
             
             # Create title with checkmark/cross and colors
             if is_correct:
-                status_icon = "✅"
-                color = 'green'
+                status_icon = "✓ CORRECT"
+                color = 'darkgreen'
                 box_color = 'lightgreen'
+                edge_color = 'green'
             else:
-                status_icon = "❌"
-                color = 'red'
+                status_icon = "✗ WRONG"
+                color = 'darkred'
                 box_color = 'lightcoral'
+                edge_color = 'red'
             
-            # Enhanced title with better formatting
-            title_text = f"{status_icon} {pred_clean.upper()}\nActual: {actual.upper()}"
+            # Enhanced title with better formatting and larger icons
+            title_text = f"{status_icon}\nPredicted: {pred_clean.upper()}\nActual: {actual.upper()}"
             
-            plt.title(title_text, color=color, fontsize=12, fontweight='bold', 
-                     bbox=dict(boxstyle="round,pad=0.3", facecolor=box_color, alpha=0.7))
+            plt.title(title_text, color=color, fontsize=11, fontweight='bold', 
+                     bbox=dict(boxstyle="round,pad=0.4", facecolor=box_color, 
+                              edgecolor=edge_color, linewidth=2, alpha=0.8))
             plt.axis('off')
         
         # Calculate accuracy
@@ -134,19 +146,35 @@ def main():
         plt.tight_layout()
         
         # Enhanced main title with overall results
-        main_title = f"🍎 Model Test Results: {model_name}\n✅ Accuracy: {correct_predictions}/{total_predictions} ({accuracy:.1f}%)"
-        plt.suptitle(main_title, fontsize=16, fontweight='bold', y=0.98)
-        plt.subplots_adjust(top=0.85)
+        if accuracy == 100:
+            accuracy_status = "PERFECT SCORE"
+            title_color = 'darkgreen'
+        elif accuracy >= 75:
+            accuracy_status = "GOOD PERFORMANCE"
+            title_color = 'green'
+        elif accuracy >= 50:
+            accuracy_status = "OKAY PERFORMANCE"
+            title_color = 'orange'
+        else:
+            accuracy_status = "POOR PERFORMANCE"
+            title_color = 'red'
+            
+        main_title = f"Model Test Results: {model_name}\n{accuracy_status} - Accuracy: {correct_predictions}/{total_predictions} ({accuracy:.1f}%)"
+        plt.suptitle(main_title, fontsize=14, fontweight='bold', y=0.92, color=title_color)
+        plt.subplots_adjust(top=0.80)
+        
+        # Create outputs directory if it doesn't exist
+        os.makedirs('outputs', exist_ok=True)
         
         # Save with timestamp
         from datetime import datetime
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"model_test_results_{timestamp}.png"
+        filename = f"outputs/model_test_results_{timestamp}.png"
         plt.savefig(filename, dpi=300, bbox_inches='tight')
         plt.show()
         
         # Print detailed results
-        print(f"\n🎯 Test Results Summary:")
+        print(f"\n*** Test Results Summary ***")
         print(f"   Model: {model_name}")
         print(f"   Correct Predictions: {correct_predictions}/{total_predictions}")
         print(f"   Accuracy: {accuracy:.1f}%")
