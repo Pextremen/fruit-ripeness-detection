@@ -85,12 +85,18 @@ def main():
         # Test and visualize
         plt.figure(figsize=(15, 10))
         
+        correct_predictions = 0
+        total_predictions = len(test_images)
+        
         for i, img_path in enumerate(test_images):
             # Read image
             img = io.imread(img_path)
             
             # Make prediction
             prediction = detector.predict(model_name, img_path)
+            
+            # Clean prediction (remove confidence if present)
+            pred_clean = prediction.split('(')[0].strip() if '(' in prediction else prediction.strip()
             
             # Get actual label from image name
             folder_name = os.path.basename(os.path.dirname(img_path))
@@ -101,19 +107,50 @@ def main():
             plt.imshow(img)
             
             # Is prediction correct?
-            is_correct = prediction.lower() == actual.lower()
-            color = 'green' if is_correct else 'red'
+            is_correct = pred_clean.lower() == actual.lower()
+            if is_correct:
+                correct_predictions += 1
             
-            plt.title(f"Prediction: {prediction}\nActual: {actual}", color=color)
+            # Create title with checkmark/cross and colors
+            if is_correct:
+                status_icon = "✅"
+                color = 'green'
+                box_color = 'lightgreen'
+            else:
+                status_icon = "❌"
+                color = 'red'
+                box_color = 'lightcoral'
+            
+            # Enhanced title with better formatting
+            title_text = f"{status_icon} {pred_clean.upper()}\nActual: {actual.upper()}"
+            
+            plt.title(title_text, color=color, fontsize=12, fontweight='bold', 
+                     bbox=dict(boxstyle="round,pad=0.3", facecolor=box_color, alpha=0.7))
             plt.axis('off')
         
+        # Calculate accuracy
+        accuracy = (correct_predictions / total_predictions) * 100
+        
         plt.tight_layout()
-        plt.suptitle(f"Model Test: {model_name}", fontsize=16)
-        plt.subplots_adjust(top=0.9)
-        plt.savefig("model_test_results.png")
+        
+        # Enhanced main title with overall results
+        main_title = f"🍎 Model Test Results: {model_name}\n✅ Accuracy: {correct_predictions}/{total_predictions} ({accuracy:.1f}%)"
+        plt.suptitle(main_title, fontsize=16, fontweight='bold', y=0.98)
+        plt.subplots_adjust(top=0.85)
+        
+        # Save with timestamp
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"model_test_results_{timestamp}.png"
+        plt.savefig(filename, dpi=300, bbox_inches='tight')
         plt.show()
         
-        print(f"Test completed. Results saved to 'model_test_results.png'.")
+        # Print detailed results
+        print(f"\n🎯 Test Results Summary:")
+        print(f"   Model: {model_name}")
+        print(f"   Correct Predictions: {correct_predictions}/{total_predictions}")
+        print(f"   Accuracy: {accuracy:.1f}%")
+        print(f"   Results saved to: {filename}")
         
     except Exception as e:
         print(f"Error: Problem occurred during testing: {str(e)}")

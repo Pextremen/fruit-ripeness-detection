@@ -30,7 +30,7 @@ class FruitRipenessUI:
         self.detector = None
         self.selected_image_path = None
         self.status_text = tk.StringVar()
-        self.status_text.set("Ready - Please load an image")
+        self.status_text.set("🚀 Ready - Please load an image")
         
         # Log file
         self.log_file = open("ui_debug.log", "a")
@@ -249,7 +249,7 @@ class FruitRipenessUI:
             self.detector.models[self.model_name] = self.model
             
             self.log(f"Model loaded successfully: {self.model_name}")
-            self.status_text.set(f"Model loaded: {self.model_name}")
+            self.status_text.set(f"✅ Model loaded: {self.model_name}")
             
         except Exception as e:
             error_msg = f"Error loading model: {str(e)}"
@@ -309,7 +309,7 @@ class FruitRipenessUI:
                 self.feature_tree.delete(item)
             
             self.log("Image processing completed")
-            self.status_text.set("Image loaded - Ready for analysis")
+            self.status_text.set("📸 Image loaded - Ready for analysis")
             
         except Exception as e:
             error_msg = f"Error processing image: {str(e)}"
@@ -326,7 +326,7 @@ class FruitRipenessUI:
         
         try:
             self.log(f"Starting analysis for: {self.selected_image_path}")
-            self.status_text.set("Analyzing ripeness...")
+            self.status_text.set("🔍 Analyzing ripeness...")
             
             # Make prediction
             prediction = self.detector.predict(self.model_name, self.selected_image_path)
@@ -337,30 +337,57 @@ class FruitRipenessUI:
                 pred_label = parts[0].strip().rstrip("(").strip()
                 confidence = parts[1].strip().rstrip(")").strip()
                 
-                display_text = f"Prediction: {pred_label.upper()}\n\nConfidence: {confidence}"
-                
-                # Set color based on prediction
+                # Create enhanced display with emojis and better formatting
                 if pred_label.lower() == "ripe":
+                    emoji = "🍎✅"
                     color = "#4CAF50"  # Green
+                    bg_color = "#E8F5E8"  # Light green background
+                    status_text = "READY TO EAT"
                 else:
+                    emoji = "🟡⏳" 
                     color = "#FF9800"  # Orange
+                    bg_color = "#FFF3E0"  # Light orange background
+                    status_text = "NEEDS MORE TIME"
+                
+                display_text = f"{emoji} {pred_label.upper()}\n\n{status_text}\n\nConfidence: {confidence}"
+                
             else:
-                display_text = f"Prediction: {prediction.upper()}"
-                color = "#333333"
+                # Clean prediction without confidence
+                pred_clean = prediction.strip()
+                
+                if pred_clean.lower() == "ripe":
+                    emoji = "🍎✅"
+                    color = "#4CAF50"  # Green
+                    bg_color = "#E8F5E8"
+                    status_text = "READY TO EAT"
+                else:
+                    emoji = "🟡⏳"
+                    color = "#FF9800"  # Orange  
+                    bg_color = "#FFF3E0"
+                    status_text = "NEEDS MORE TIME"
+                
+                display_text = f"{emoji} {pred_clean.upper()}\n\n{status_text}"
             
-            # Update result display
-            self.result_label.config(text=display_text, fg=color)
+            # Update result display with enhanced styling
+            self.result_label.config(
+                text=display_text, 
+                fg=color,
+                bg=bg_color,
+                font=("Arial", 12, "bold"),
+                relief="solid",
+                bd=2
+            )
             
             # Extract and display features
             self.extract_and_display_features()
             
             self.log(f"Analysis completed: {prediction}")
-            self.status_text.set("Analysis completed")
+            self.status_text.set("✅ Analysis completed successfully!")
             
         except Exception as e:
             error_msg = f"Error during analysis: {str(e)}"
             self.log(error_msg)
-            self.status_text.set("Error during analysis")
+            self.status_text.set("❌ Error during analysis")
             messagebox.showerror("Error", error_msg)
             
     def extract_and_display_features(self):
